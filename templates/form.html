@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aktualizacja Ilości</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script>
+        async function fetchSuggestions() {
+            const query = document.getElementById("article").value;
+            if (query.length < 2) return;
+
+            const response = await fetch(`/autocomplete?query=${query}`);
+            const suggestions = await response.json();
+
+            const dataList = document.getElementById("article-list");
+            dataList.innerHTML = "";
+            suggestions.forEach(item => {
+                const option = document.createElement("option");
+                option.value = item;
+                dataList.appendChild(option);
+            });
+        }
+
+        async function fetchVariants() {
+            const article = document.getElementById("article").value;
+            if (!article) return;
+
+            const response = await fetch(`/get_variants?article=${article}`);
+            const data = await response.json();
+
+            const colorSelect = document.getElementById("color");
+            const sizeSelect = document.getElementById("size");
+
+            colorSelect.innerHTML = "";
+            sizeSelect.innerHTML = "";
+
+            data.colors.forEach(color => {
+                const option = document.createElement("option");
+                option.value = color;
+                option.textContent = color;
+                colorSelect.appendChild(option);
+            });
+
+            data.sizes.forEach(size => {
+                const option = document.createElement("option");
+                option.value = size;
+                option.textContent = size;
+                sizeSelect.appendChild(option);
+            });
+        }
+
+        async function updateQuantity() {
+            const article = document.getElementById("article").value;
+            const color = document.getElementById("color").value;
+            const size = document.getElementById("size").value;
+            const quantity = document.getElementById("quantity").value;
+
+            if (!article || !color || !size || quantity <= 0) {
+                displayMessage("Wypełnij wszystkie pola i wpisz ilość większą od 0!", "error");
+                return;
+            }
+
+            const response = await fetch("/update_quantity", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ article, color, size, quantity: parseInt(quantity) })
+            });
+
+            const result = await response.json();
+            displayMessage(result.message, result.status);
+
+            if (result.status === "success") {
+                appendConfirmation(article, color, size, quantity);
+            }
+        }
+
+        async function removeZeroQuantities() {
+            const response = await fetch("/duplicate_and_remove_zero", { 
+                method: "POST", 
+                headers: { "Content-Type": "application/json" }
+            });
+
+            const result = await response.json();
+            displayMessage(result.message, result.status);
+            clearConfirmations(); // Usunięcie komunikatów
+        }
+
+        function displayMessage(message, type) {
+            const messageDiv = document.getElementById("message");
+            messageDiv.innerHTML = message;
+            messageDiv.className = `message ${type}`;
+            
+            setTimeout(() => {
+                messageDiv.innerHTML = "";
+                messageDiv.className = "message";
+            }, 3000);
+        }
+
+        function appendConfirmation(article, color, size, quantity) {
+            const confirmationContainer = document.getElementById("confirmation-container");
+            const newEntry = document.createElement("div");
+            newEntry.className = "confirmation-item";
+            newEntry.innerHTML = `
+                <p><strong>${article}</strong></p>
+                <p>Kolor: ${color} | Rozmiar: ${size} | Ilość: ${quantity}</p>
+            `;
+            confirmationContainer.appendChild(newEntry);
+        }
+
+        function clearConfirmations() {
+            document.getElementById("confirmation-container").innerHTML = "";
+        }
+    </script>
+    <style>
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        #confirmation-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
+        }
+        #confirmation-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 100%;
+            max-width: 400px;
+            margin-top: 20px;
+        }
+        .confirmation-item {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            padding: 10px;
+            border-radius: 5px;
+            width: 100%;
+            text-align: center;
+        }
+        .remove-btn {
+            margin-top: 20px;
+            padding: 10px 15px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Aktualizacja Ilości w Excelu</h2>
+
+        <label>Article-Nr:</label>
+        <input type="text" id="article" list="article-list" oninput="fetchSuggestions()" onchange="fetchVariants()">
+        <datalist id="article-list"></datalist>
+
+        <label>Color:</label>
+        <select id="color"></select>
+
+        <label>Size:</label>
+        <select id="size"></select>
+
+        <label>Quantity:</label>
+        <input type="number" id="quantity">
+
+        <button onclick="updateQuantity()">Aktualizuj</button>
+
+        <div id="message" class="message"></div>
+    </div>
+    
+    <div id="confirmation-wrapper">
+        <h3>Zaktualizowane produkty:</h3>
+        <div id="confirmation-container"></div>
+        <button class="remove-btn" onclick="removeZeroQuantities()">Usuń pozycje z ilością 0</button>
+    </div>
+</body>
+</html>

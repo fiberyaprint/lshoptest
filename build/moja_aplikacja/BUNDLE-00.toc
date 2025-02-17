@@ -1,0 +1,3 @@
+([('moja_aplikacja',
+   '/Users/macbookpro/Documents/lshoptest/dist/moja_aplikacja',
+   'EXECUTABLE')],)
