@@ -1,18 +1,25 @@
+import os
+import shutil
 import pandas as pd
 from flask import Flask, render_template, request, jsonify
-import shutil
 from openpyxl import load_workbook
 import xlsxwriter
 
-app = Flask(__name__)
+# Ustawienie ścieżek dla plików
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))  # Główna ścieżka aplikacji
+TEMPLATES_DIR = os.path.join(BASE_DIR, "templates")  # Folder szablonów
+STATIC_DIR = os.path.join(BASE_DIR, "static")  # Folder stylów
+
+# Pliki Excela
+FILE_PATH = os.path.join(BASE_DIR, "export_order_articles.xlsx")
+DUPLICATE_FILE_PATH = os.path.join(BASE_DIR, "export_order_articles_filtered.xlsx")
+
+# Inicjalizacja Flask
+app = Flask(__name__, template_folder=TEMPLATES_DIR, static_folder=STATIC_DIR)
 
 # Wczytanie danych z Excela
-FILE_PATH = "export_order_articles.xlsx"
-DUPLICATE_FILE_PATH = "export_order_articles_filtered.xlsx"
 df = pd.read_excel(FILE_PATH, sheet_name="Worksheet", dtype=str)
-
-# Normalizacja kolumn (usunięcie zbędnych spacji)
-df.columns = df.columns.str.strip()
+df.columns = df.columns.str.strip()  # Normalizacja kolumn (usunięcie spacji)
 
 @app.route("/")
 def index():
@@ -21,7 +28,6 @@ def index():
 @app.route("/autocomplete", methods=["GET"])
 def autocomplete():
     query = request.args.get("query", "").strip().lower()
-    
     if not query:
         return jsonify([])
 
@@ -33,7 +39,6 @@ def autocomplete():
 @app.route("/get_variants", methods=["GET"])
 def get_variants():
     article = request.args.get("article", "").strip()
-
     if not article:
         return jsonify({"colors": [], "sizes": []})
 
