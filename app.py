@@ -6,9 +6,9 @@ from flask import Flask, render_template, request, jsonify
 from openpyxl import load_workbook
 import xlsxwriter
 
-# 🟢 Poprawione: Pobranie ścieżki do katalogu aplikacji
+# 🟢 Poprawione: Pobranie poprawnej ścieżki do katalogu aplikacji (.exe i dev)
 if getattr(sys, 'frozen', False):
-    BASE_DIR = sys._MEIPASS  # Jeśli uruchamiamy jako .exe, to MEIPASS wskazuje folder tymczasowy
+    BASE_DIR = os.path.dirname(sys.executable)  # Jeśli uruchamiamy jako .exe, to pobieramy folder, w którym jest plik exe
 else:
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))  # Standardowa ścieżka w trybie deweloperskim
 
@@ -21,7 +21,7 @@ DUPLICATE_FILE_PATH = os.path.join(BASE_DIR, "export_order_articles_filtered.xls
 
 # 🟢 Sprawdzenie, czy plik Excel istnieje
 if not os.path.exists(FILE_PATH):
-    raise FileNotFoundError(f"❌ BŁĄD: Nie znaleziono pliku {FILE_PATH}. Upewnij się, że plik jest w katalogu aplikacji!")
+    raise FileNotFoundError(f"❌ BŁĄD: Nie znaleziono pliku {FILE_PATH}. Upewnij się, że plik jest w tym samym katalogu co `app.exe`!")
 
 # 🟢 Inicjalizacja aplikacji Flask
 app = Flask(__name__, template_folder=TEMPLATES_DIR, static_folder=STATIC_DIR)
