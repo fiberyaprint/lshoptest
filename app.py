@@ -1,4 +1,5 @@
 import os
+import sys
 import shutil
 import pandas as pd
 from flask import Flask, render_template, request, jsonify
@@ -6,7 +7,11 @@ from openpyxl import load_workbook
 import xlsxwriter
 
 # 🟢 Poprawione: Pobranie ścieżki do katalogu aplikacji
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))  
+if getattr(sys, 'frozen', False):
+    BASE_DIR = sys._MEIPASS  # Jeśli uruchamiamy jako .exe, to MEIPASS wskazuje folder tymczasowy
+else:
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))  # Standardowa ścieżka w trybie deweloperskim
+
 TEMPLATES_DIR = os.path.join(BASE_DIR, "templates")  
 STATIC_DIR = os.path.join(BASE_DIR, "static")  
 
