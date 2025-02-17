@@ -5,21 +5,25 @@ from flask import Flask, render_template, request, jsonify
 from openpyxl import load_workbook
 import xlsxwriter
 
-# Ustawienie ścieżek dla plików
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))  # Główna ścieżka aplikacji
-TEMPLATES_DIR = os.path.join(BASE_DIR, "templates")  # Folder szablonów
-STATIC_DIR = os.path.join(BASE_DIR, "static")  # Folder stylów
+# 🟢 Poprawione: Pobranie ścieżki do katalogu aplikacji
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))  
+TEMPLATES_DIR = os.path.join(BASE_DIR, "templates")  
+STATIC_DIR = os.path.join(BASE_DIR, "static")  
 
-# Pliki Excela
-FILE_PATH = os.path.join(BASE_DIR, "export_order_articles.xlsx")
+# 🟢 Poprawione: Poprawne ścieżki do plików Excel
+FILE_PATH = os.path.join(BASE_DIR, "export_order_articles.xlsx")  
 DUPLICATE_FILE_PATH = os.path.join(BASE_DIR, "export_order_articles_filtered.xlsx")
 
-# Inicjalizacja Flask
+# 🟢 Sprawdzenie, czy plik Excel istnieje
+if not os.path.exists(FILE_PATH):
+    raise FileNotFoundError(f"❌ BŁĄD: Nie znaleziono pliku {FILE_PATH}. Upewnij się, że plik jest w katalogu aplikacji!")
+
+# 🟢 Inicjalizacja aplikacji Flask
 app = Flask(__name__, template_folder=TEMPLATES_DIR, static_folder=STATIC_DIR)
 
 # Wczytanie danych z Excela
 df = pd.read_excel(FILE_PATH, sheet_name="Worksheet", dtype=str)
-df.columns = df.columns.str.strip()  # Normalizacja kolumn (usunięcie spacji)
+df.columns = df.columns.str.strip()  # Normalizacja kolumn
 
 @app.route("/")
 def index():
