@@ -10,7 +10,7 @@ jobs:
     runs-on: windows-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4  # Użycie najnowszej wersji
 
       - name: Setup Python
         uses: actions/setup-python@v4
@@ -20,13 +20,13 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pyinstaller
+          pip install pyinstaller pandas openpyxl flask
 
       - name: Build EXE
         run: pyinstaller --onefile --noconsole app.py
 
       - name: Upload EXE
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4  # Poprawiona wersja
         with:
           name: built-exe
           path: dist/app.exe
