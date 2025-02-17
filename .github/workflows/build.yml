@@ -10,7 +10,7 @@ jobs:
     runs-on: windows-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4  # Użycie najnowszej wersji
+        uses: actions/checkout@v4  # Pobranie kodu źródłowego
 
       - name: Setup Python
         uses: actions/setup-python@v4
@@ -22,11 +22,16 @@ jobs:
           python -m pip install --upgrade pip
           pip install pyinstaller pandas openpyxl flask xlsxwriter
 
+      - name: Copy Excel file to dist
+        run: cp export_order_articles.xlsx dist/
+
       - name: Build EXE
         run: pyinstaller --onefile --noconsole app.py
 
-      - name: Upload EXE
-        uses: actions/upload-artifact@v4  # Poprawiona wersja
+      - name: Upload generated files
+        uses: actions/upload-artifact@v4
         with:
-          name: built-exe
-          path: dist/app.exe
+          name: output-files
+          path: |
+            dist/app.exe
+            export_order_articles.xlsx
